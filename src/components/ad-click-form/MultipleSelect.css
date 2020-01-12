@@ -1,0 +1,12 @@
+.multiple-select__input{
+  min-width: 200px;
+}
+.multiple-select__selections{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.multiple-select__selection{
+  margin: 4px;
+}

@@ -15,15 +15,23 @@ const initState = {
       date: '01.01.2019',
       datasource: 'Facebook Ads',
       compaign: 'Offer Campaigns',
-      clicks: 214,
-      impressions: 34111
+      clicks: 550,
+      impressions: 21912
     },
     {
-      id: 1,
+      id: 3,
       date: '02.01.2019',
       datasource: 'Google Adwords',
       compaign: 'GDN Prospecting - App - Prio 1 Offer',
-      clicks: 214,
+      clicks: 331,
+      impressions: 14312
+    },
+    {
+      id: 4,
+      date: '03.01.2019',
+      datasource: 'Google Analytics',
+      compaign: 'New General Campaign - TAW - Mobile',
+      clicks: 111,
       impressions: 34111
     }
   ]
