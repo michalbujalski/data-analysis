@@ -1,5 +1,5 @@
 import React from 'react';
-import AdClickProvider from './context/AddClick.context';
+import AdClickProvider from './context/ad-click/AdClick.context';
 import AdClickPage from './page/AdClick.page';
 import './App.css';
 

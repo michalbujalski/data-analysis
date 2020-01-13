@@ -19,10 +19,10 @@ export default ({ values, selectedValues, setSelectedValues, label }) => {
   return (
     <Box>
       <FormControl>
-        <InputLabel id="demo-mutiple-chip-label">{label}</InputLabel>
+        <InputLabel id="mutiple-chip-label">{label}</InputLabel>
         <Select
-          labelId="demo-mutiple-chip-label"
-          id="demo-mutiple-chip"
+          labelId="mutiple-chip-label"
+          id="mutiple-chip"
           multiple
           value={selectedValues}
           onChange={handleChange}
