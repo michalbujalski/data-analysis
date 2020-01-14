@@ -10,12 +10,21 @@ import {
   ListItemText,
   Checkbox
 } from '@material-ui/core';
+import { FixedSizeList as List } from 'react-window';
 import './MultipleSelect.css'
 
 export default ({ values, selectedValues, setSelectedValues, label }) => {
   const handleChange = event => {
-    setSelectedValues(event.target.value);
+    setSelectedValues(event.currentTarget.dataset.value);
   };
+
+  const Row = ({index, style}) => {
+    const item = values[index];
+    return (<MenuItem data-value={item} onClick={handleChange} style={style}>
+        <Checkbox checked={selectedValues.indexOf(values[index]) > -1} />
+        <ListItemText primary={item} />
+      </MenuItem>)
+  }
   return (
     <Box>
       <FormControl>
@@ -39,12 +48,13 @@ export default ({ values, selectedValues, setSelectedValues, label }) => {
             </div>
           )}
         >
-          {values.map(value => (
-            <MenuItem key={value} value={value} >
-              <Checkbox checked={selectedValues.indexOf(value) > -1} />
-              <ListItemText primary={value} />
-            </MenuItem>
-          ))}
+          <List
+            height={400}
+            itemCount={values.length}
+            itemSize={45}
+            width={550}>
+            {Row}
+          </List>
         </Select>
       </FormControl>
     </Box>

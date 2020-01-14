@@ -3,37 +3,38 @@ import _ from 'lodash';
 import './AdClickForm.css'
 import MultipleSelect from './MultipleSelect.component';
 import { useAdClickData } from '../../context/ad-click/AdClick.context';
+import { setSelectedCampaigns, setSelectedDatasources } from '../../context/ad-click/AdClick.actions';
 
 export default () => {
-  const [{ formData }] = useAdClickData();
+  const [{ formData, selectedDatasources, selectedCampaigns}, dispatch] = useAdClickData();
   const [datasources, setDatasources] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
-  const [selectedDatasources, setSelectedDatasources] = useState([]);
-  const [selectedCampaigns, setSelectedCampaigns] = useState([]);
+
+  const cachedFormData = useMemo(() => formData, [formData])
+  useEffect(() => {
+    const datasources = Object.keys(cachedFormData);
+    setDatasources(datasources)
+  }, [cachedFormData]);
 
   useEffect(() => {
-    setDatasources(Object.keys(formData));
-  }, [formData])
+    (async () => {
+      const result = await new Promise((resolve) => {
+        const selectedCampaigns = selectedDatasources.map(datasource => {
+          return Object.keys(cachedFormData[datasource]);
+        })
+        resolve(_.flatten(selectedCampaigns));
+      })
+      setCampaigns(result);
+    })();
 
-  // const formatDatasources = entry => {
+  }, [selectedDatasources, cachedFormData]);
 
-  //   console.log(entry)
-  //   return Object.entries(entry).map(([key, value]) => key);
-  // }
-
-  useEffect(() => {
-    // let campaigns = [];
-    // selectedDatasources.forEach(datasource => {
-      // console.log(formatDatasources(formData[datasource]));
-      // campaigns = _.concat(campaigns, formatDatasources(formData[datasource]));
-    // });
-    
-    setCampaigns(_.flatten(selectedDatasources.map(datasource => formData[datasource])))
-  }, [selectedDatasources, formData]);
-
-  const handleSelectDatasource = (newVals) => {
-    setSelectedDatasources(newVals);
+  const handleSelectDatasource = (newVal) => {
+    dispatch(setSelectedDatasources(_.xor(selectedDatasources,[newVal])));
   };
+  const handleSelectedCampaign = (newVal) => {
+    dispatch(setSelectedCampaigns(_.xor(selectedCampaigns,[newVal])));
+  }
 
   return (
     <div className="add-click-form">
@@ -46,8 +47,8 @@ export default () => {
       <MultipleSelect
         values={campaigns}
         selectedValues={selectedCampaigns}
-        setSelectedValues={setSelectedCampaigns}
-        label="Campaigns"
+        setSelectedValues={handleSelectedCampaign}
+        label={'datasource'}
       />
     </div>
   );

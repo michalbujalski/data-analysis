@@ -12,8 +12,6 @@ export default (state, action) => {
       return { ...state, data: action.payload };
     }
     case types.SET_FORM_DATA: {
-      console.log('reducer')
-      console.log(action.payload)
       return { ...state, formData: action.payload}
     }
     default:{

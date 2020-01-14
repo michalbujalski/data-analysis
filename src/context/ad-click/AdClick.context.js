@@ -5,7 +5,7 @@ const initState = {
   selectedCampaigns: [],
   selectedDatasources: [],
   data: [],
-  formData: {}
+  formData: []
 }
 
 const AdClickContext = createContext()

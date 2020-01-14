@@ -9,33 +9,32 @@ import { useAdClickData } from '../context/ad-click/AdClick.context';
 import { setData, setFormData } from '../context/ad-click/AdClick.actions';
 
 const getValues = (array, property) => _.uniqBy(array, property).map(item => item[property])
+const getObject = (arr, key) => {
+  const keys = getValues(arr, key);
+  let obj = {};
+  keys.forEach(uniqueKey => {
+      obj = {...obj, [uniqueKey]: 
+        arr.filter(item => {
+        return item[key] === uniqueKey
+      })
+    };
+  });
+  return obj;
+};
 
 export default () => {
   const [{ data }, dispatch] = useAdClickData();
   useEffect(() => {
     (async () => {
       const parsedData = await fetchData();
-      const datasources = getValues(parsedData, 'datasource');
-      let formData = {};
-      datasources.forEach(datasource => {
-        // const entry = {};
-        const datasources = getValues(parsedData.filter(item => item.datasource === datasource),'campaign');
-        // datasources.map(datasource => {
-        //   const arr = _.flatten(datasource.split('-').map(item => item.split('|'))).map(item=>_.trim(item));
-        //   const key = arr.pop();
-        //   if(entry.hasOwnProperty(key)){
-        //     entry[key] = _.concat(entry[key], arr );
-        //   } else {
-        //     entry[key] = arr;
-        //   }
-        // });
-
-        // console.log(_.uniq(Object.keys(entry).m));
-        // console.log(entry)
-        formData = { ...formData, [datasource]: datasources}
-      });
-      dispatch(setData(parsedData));
-      dispatch(setFormData(formData));
+      let obj = {}
+      Object.entries(getObject(parsedData, 'datasource')).forEach(
+        ([key, value]) => {
+          obj = {...obj, [key]: getObject(value,'campaign')};
+        }
+      )
+      dispatch(setFormData(obj));
+      dispatch(setData(parsedData))
     })()
   }, []);
   return <div className="ad-click-page">
