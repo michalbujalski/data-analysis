@@ -4,8 +4,7 @@ import reducer from './AdClick.reducer';
 const initState = {
   selectedCampaigns: [],
   selectedDatasources: [],
-  data: [],
-  formData: []
+  formData: null
 }
 
 const AdClickContext = createContext()

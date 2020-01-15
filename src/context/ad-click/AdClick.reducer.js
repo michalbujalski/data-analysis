@@ -8,9 +8,6 @@ export default (state, action) => {
     case types.SET_SELECTED_DATASOURCES: {
       return { ...state, selectedDatasources: action.payload };
     }
-    case types.SET_DATA: {
-      return { ...state, data: action.payload };
-    }
     case types.SET_FORM_DATA: {
       return { ...state, formData: action.payload}
     }

@@ -1,39 +1,46 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import _ from 'lodash';
 import './AdClickForm.css'
 import MultipleSelect from './MultipleSelect.component';
 import { useAdClickData } from '../../context/ad-click/AdClick.context';
 import { setSelectedCampaigns, setSelectedDatasources } from '../../context/ad-click/AdClick.actions';
+import { removeItemsFromArray, getCampaigns } from '../../helpers/data-analysis';
 
 export default () => {
   const [{ formData, selectedDatasources, selectedCampaigns}, dispatch] = useAdClickData();
   const [datasources, setDatasources] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
 
-  const cachedFormData = useMemo(() => formData, [formData])
   useEffect(() => {
-    const datasources = Object.keys(cachedFormData);
+    const datasources = Object.keys(formData);
     setDatasources(datasources)
-  }, [cachedFormData]);
+  }, [formData]);
 
   useEffect(() => {
     (async () => {
       const result = await new Promise((resolve) => {
-        const selectedCampaigns = selectedDatasources.map(datasource => {
-          return Object.keys(cachedFormData[datasource]);
-        })
-        resolve(_.flatten(selectedCampaigns));
+        resolve(getCampaigns(formData, selectedDatasources));
       })
       setCampaigns(result);
     })();
+  }, [selectedDatasources, formData]);
 
-  }, [selectedDatasources, cachedFormData]);
-
-  const handleSelectDatasource = (newVal) => {
-    dispatch(setSelectedDatasources(_.xor(selectedDatasources,[newVal])));
+  const handleSelectDatasource = async (newVal) => {
+    const result = await new Promise(resolve => {
+      const newDatasources = _.xor(selectedDatasources,[newVal])
+      if(newDatasources.length < selectedDatasources.length){
+        const campaignsToRemove = Object.keys(formData[newVal]);
+        dispatch(setSelectedCampaigns(removeItemsFromArray(selectedCampaigns, campaignsToRemove)));
+      }
+      resolve(newDatasources);
+    });
+    dispatch(setSelectedDatasources(result));
   };
-  const handleSelectedCampaign = (newVal) => {
-    dispatch(setSelectedCampaigns(_.xor(selectedCampaigns,[newVal])));
+  const handleSelectedCampaign = async (newVal) => {
+    const result = await new Promise(resolve => {
+      resolve(_.xor(selectedCampaigns,[newVal]));
+    });
+    dispatch(setSelectedCampaigns(result));
   }
 
   return (
@@ -48,7 +55,7 @@ export default () => {
         values={campaigns}
         selectedValues={selectedCampaigns}
         setSelectedValues={handleSelectedCampaign}
-        label={'datasource'}
+        label={'Campaign'}
       />
     </div>
   );

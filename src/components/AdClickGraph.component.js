@@ -1,64 +1,54 @@
-import React from 'react';
-import {
-  VictoryChart,
-  VictoryVoronoiContainer,
-  VictoryGroup,
-  VictoryTooltip,
-  VictoryLine,
-  VictoryScatter
-} from 'victory';
-
-const data2 = [
-  { data: 1, y: 3 },
-  { x: 2, y: 1 },
-  { x: 3, y: 2 },
-  { x: 4, y: -2 },
-  { x: 5, y: -1 },
-  { x: 6, y: 2 },
-  { x: 7, y: 3 }
-];
-
-const data =[
-  { x: new Date('01.01.2019'), y: 12},
-  { x: new Date('02.01.2019'), y: 5 },
-  { x: new Date('03.01.2019'), y: 5 },
-  { x: new Date('02.01.2019'), y: 5 },
-  { x: new Date('02.04.2019'), y: 5 },
-  { x: new Date('12.12.2019'), y: 5 },
-  { x: new Date('02.01.2019'), y: 5 }
-  // { data: '03.01.2019', y: 3 },
-  // { data: '04.01.2019', y: 0 },
-  // { data: '05.01.2019', y: -2 },
-  // { data: '06.01.2019', y: -2 },
-  // { data: '07.01.2019', y: 5 }
-];
-
-const renderLines = (data, color) => (
-  <VictoryGroup
-    color={color}
-    labels={({ datum }) => `date: ${datum.y}`}
-    labelComponent={
-      <VictoryTooltip
-        style={{ fontSize: 10 }}
-      />
-    }
-    data={data}
-  >
-    <VictoryLine/>
-    <VictoryScatter
-      size={({ active }) => active ? 8 : 3}
-    />
-  </VictoryGroup>)
+import React, { useEffect, useMemo, useState } from 'react';
+import _ from 'lodash';
+import { useAdClickData } from '../context/ad-click/AdClick.context';
+import { filterData, getObject, parsePoints, getCampaigns } from '../helpers/data-analysis';
+import { LineChart, XAxis, Tooltip, CartesianGrid, Line, Legend, YAxis } from 'recharts';
 
 export default () => {
-  
+  const [{ formData, selectedDatasources, selectedCampaigns }] = useAdClickData();
+  const [data, setData] = useState([]);
+
+  const computedDatasources = useMemo(()=>{
+    if(_.isEmpty(selectedDatasources)){
+      return Object.keys(formData);
+    }
+    return selectedDatasources;
+  }, [selectedDatasources, formData]);
+
+  const computedCampaigns = useMemo(()=> {
+    if(_.isEmpty(selectedCampaigns)){
+      return getCampaigns(formData, Object.keys(formData));
+    }
+    return selectedCampaigns;
+  }, [selectedCampaigns, formData])
+
+  const computeData = async (formData, selectedDatasources, selectedCampaigns) => {
+    const data= await new Promise(resolve => {
+        resolve(parsePoints(getObject(filterData(selectedDatasources, selectedCampaigns, formData),'date' )))
+      });
+    setData(data);
+  }
+
+  useEffect(() => {
+    computeData(formData, computedDatasources, computedCampaigns);
+  }, [formData, computedDatasources, computedCampaigns]);
+
   return (
-      <VictoryChart
-        height={250}
-        width={400}
-        containerComponent={<VictoryVoronoiContainer/>}
-      >
-        {renderLines(data)}
-       </VictoryChart>
+  <LineChart
+    width={600}
+    height={400}
+    data={data}
+    margin={{
+      top: 5, right: 30, left: 20, bottom: 5,
+    }}
+  >
+    <Tooltip />
+    <CartesianGrid stroke="#f5f5f5" />
+    <Line type="monotone" dataKey="clicks" stroke="#ff0000" yAxisId="left" />
+    <Line type="monotone" dataKey="impressions" stroke="#0000ff" yAxisId="left" />
+    <Legend />
+    <XAxis dataKey="date" />
+    <YAxis yAxisId="left" orientation="left"/>
+  </LineChart>
   )
 }

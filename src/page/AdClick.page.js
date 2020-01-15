@@ -1,44 +1,44 @@
-import React, { useEffect } from 'react';
-import _ from 'lodash';
+import React, { useEffect, useState } from 'react';
 import AdClickForm from '../components/ad-click-form/AdClickForm.component';
 import AdClickGraph from '../components/AdClickGraph.component';
 
-import './AdClick.css';
 import { fetchData } from '../api';
 import { useAdClickData } from '../context/ad-click/AdClick.context';
-import { setData, setFormData } from '../context/ad-click/AdClick.actions';
+import { setFormData } from '../context/ad-click/AdClick.actions';
+import { parseFormData } from '../helpers/data-analysis';
 
-const getValues = (array, property) => _.uniqBy(array, property).map(item => item[property])
-const getObject = (arr, key) => {
-  const keys = getValues(arr, key);
-  let obj = {};
-  keys.forEach(uniqueKey => {
-      obj = {...obj, [uniqueKey]: 
-        arr.filter(item => {
-        return item[key] === uniqueKey
-      })
-    };
-  });
-  return obj;
-};
+import './AdClick.css';
+
+const renderContent = () => <><AdClickForm /><AdClickGraph /></>
 
 export default () => {
-  const [{ data }, dispatch] = useAdClickData();
+  const [{ formData },dispatch] = useAdClickData();
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(null);
   useEffect(() => {
+    setIsLoading(true);
     (async () => {
-      const parsedData = await fetchData();
-      let obj = {}
-      Object.entries(getObject(parsedData, 'datasource')).forEach(
-        ([key, value]) => {
-          obj = {...obj, [key]: getObject(value,'campaign')};
-        }
-      )
-      dispatch(setFormData(obj));
-      dispatch(setData(parsedData))
+      try{
+        const rawDataArr = await fetchData();
+        const parsedData = await parseFormData(rawDataArr);
+        dispatch(setFormData(parsedData));
+      }catch{
+        setError("Error fetching or parsing data");
+      }finally{
+        setIsLoading(false);
+      }
     })()
   }, []);
+
+  if(isLoading){
+    return <div>{error}</div>
+  }
+
+  if(error){
+    return <div>{error}</div>
+  }
+
   return <div className="ad-click-page">
-    <AdClickForm />
-    {/* <AdClickGraph /> */}
-    </div>
+    {formData && renderContent()}
+  </div>
 }
