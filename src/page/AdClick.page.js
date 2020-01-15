@@ -31,7 +31,7 @@ export default () => {
   }, []);
 
   if(isLoading){
-    return <div>{error}</div>
+    return <div>Loading...</div>
   }
 
   if(error){
